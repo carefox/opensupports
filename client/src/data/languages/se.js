@@ -22,7 +22,7 @@ export default {
     'BACK_LOGIN_FORM': 'Tillbaka till inloggning',
     'VIEW_ARTICLES': 'Läs Artiklar',
     'EDIT_PROFILE': 'Redigera Profil',
-    'CLOSE_SESSION': 'Stäng session',
+    'CLOSE_SESSION': 'Logga ut',
     'CREATE_TICKET': 'Skapa Ärende',
     'TICKET_LIST': 'Ärendelista',
     'SUPPORT_CENTER': 'Supportcenter',
