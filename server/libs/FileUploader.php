@@ -21,31 +21,6 @@ class FileUploader extends FileManager {
         $file->setName($this->generateFileName($_FILES[$fileKey]['name']));
 
         $file->addValidations(array(
-            new \Upload\Validation\Mimetype([
-                'image/png',
-                'image/gif',
-                'image/jpeg',
-                'image/bmp',
-                'image/tiff',
-
-                'application/gzip',
-                'application/x-gzip',
-                'application/zip',
-                'application/x-rar-compressed',
-                'application/x-7z-compressed',
-                'application/x-tar',
-                'application/x-bzip',
-                'application/x-bzip2',
-
-                'text/csv',
-                'text/rtf',
-                'application/msword',
-                'application/vnd.ms-excel',
-                'text/plain',
-                'application/pdf',
-
-                'application/octet-stream'
-            ]),
             new \Upload\Validation\Size($this->maxSize.'M')
         ));
 
