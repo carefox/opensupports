@@ -42,7 +42,11 @@ class FileUploader extends FileManager {
                 'application/msword',
                 'application/vnd.ms-excel',
                 'text/plain',
-                'application/pdf'
+                'application/pdf',
+
+                'pax',
+                'tlu',
+                'wli'
             ]),
             new \Upload\Validation\Size($this->maxSize.'M')
         ));
