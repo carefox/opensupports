@@ -44,9 +44,7 @@ class FileUploader extends FileManager {
                 'text/plain',
                 'application/pdf',
 
-                'application/pax',
-                'application/tlu',
-                'application/wli'
+                'application/octet-stream'
             ]),
             new \Upload\Validation\Size($this->maxSize.'M')
         ));
