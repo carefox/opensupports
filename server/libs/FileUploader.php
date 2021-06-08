@@ -3,7 +3,7 @@
 class FileUploader extends FileManager {
     use SingletonTrait;
 
-    private $maxSize = 1;
+    private $maxSize = 5120;
     private $fileName;
     private $permission;
     private $storage;
