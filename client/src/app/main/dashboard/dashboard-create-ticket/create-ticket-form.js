@@ -1,24 +1,24 @@
-import React              from 'react';
-import _                  from 'lodash';
-import {connect}          from 'react-redux';
+import React from 'react';
+import _ from 'lodash';
+import { connect } from 'react-redux';
 
-import i18n               from 'lib-app/i18n';
-import API                from 'lib-app/api-call';
-import SessionStore       from 'lib-app/session-store';
-import LanguageSelector   from 'app-components/language-selector';
+import i18n from 'lib-app/i18n';
+import API from 'lib-app/api-call';
+import SessionStore from 'lib-app/session-store';
+import LanguageSelector from 'app-components/language-selector';
 import DepartmentDropdown from 'app-components/department-dropdown';
-import Captcha            from 'app/main/captcha';
-import {getPublicDepartmentIndexFromDepartmentId} from 'app/admin/panel/staff/admin-panel-departments';
+import Captcha from 'app/main/captcha';
+import { getPublicDepartmentIndexFromDepartmentId } from 'app/admin/panel/staff/admin-panel-departments';
 
-import Header             from 'core-components/header';
-import TextEditor         from 'core-components/text-editor';
-import Form               from 'core-components/form';
-import FormField          from 'core-components/form-field';
-import SubmitButton       from 'core-components/submit-button';
-import Message            from 'core-components/message';
+import Header from 'core-components/header';
+import TextEditor from 'core-components/text-editor';
+import Form from 'core-components/form';
+import FormField from 'core-components/form-field';
+import SubmitButton from 'core-components/submit-button';
+import Message from 'core-components/message';
 
 class CreateTicketForm extends React.Component {
-    
+
     static propTypes = {
         userLogged: React.PropTypes.bool,
         isStaff: React.PropTypes.bool,
@@ -40,8 +40,14 @@ class CreateTicketForm extends React.Component {
             email: '',
             name: '',
             language: this.props.language
-        }
+        },
+        users: [],
+        selectedUser: 0
     };
+
+    componentDidMount() {
+        this.loadUsers();
+    }
 
     render() {
         const {
@@ -57,14 +63,14 @@ class CreateTicketForm extends React.Component {
                 <Header title={i18n('CREATE_TICKET')} description={i18n('CREATE_TICKET_DESCRIPTION')} />
                 <Form {...this.getFormProps()}>
                     {(!userLogged) ? this.renderEmailAndName() : null}
-                    <FormField label={i18n('TITLE')} name="title" validation="TITLE" required field="input" fieldProps={{size: 'large'}} />
+                    <FormField label={i18n('TITLE')} name="title" validation="TITLE" required field="input" fieldProps={{ size: 'large' }} />
                     <div className="row">
-                        {!(isDefaultDepartmentLocked*1) || isStaff ?
+                        {!(isDefaultDepartmentLocked * 1) || isStaff ?
                             <FormField className="col-md-5" label={i18n('DEPARTMENT')} name="departmentIndex" field="select" decorator={DepartmentDropdown} fieldProps={{
                                 departments: SessionStore.getDepartments(),
                                 size: 'medium'
                             }} /> : null
-                        }    
+                        }
                         {!onlyOneSupportedLanguage ?
                             <FormField className="col-md-5" label={i18n('LANGUAGE')} name="language" field="select" decorator={LanguageSelector} fieldProps={{
                                 type: 'supported',
@@ -72,11 +78,16 @@ class CreateTicketForm extends React.Component {
                             }} /> : null
                         }
                     </div>
+                    <FormField field="checkbox" label="Skapa ärende åt kunden" name="createForUser"></FormField>
+                    <select name="user" onChange={(e) => this.setState({selectedUser: e.target.value})}>
+                        {this.renderUserSelect()}
+                    </select>
+
                     <FormField
                         label={i18n('CONTENT')}
                         name="content"
                         validation="TEXT_AREA"
-                        fieldProps={{allowImages: allowAttachments}}
+                        fieldProps={{ allowImages: allowAttachments }}
                         required
                         field="textarea" />
                     <div className="create-ticket-form__buttons-container">
@@ -90,11 +101,22 @@ class CreateTicketForm extends React.Component {
         );
     }
 
+    renderUserSelect() {
+        const users = this.state.users;
+        users.unshift({ name: "Ingen vald", id: "0" })
+
+        return users.map(element => {
+            return (
+                <option value={element.id} key={element.id}>{element.name}</option>
+            );
+        });
+    }
+
     renderEmailAndName() {
         return (
             <div className="row">
-                <FormField className="col-md-6" label={i18n('EMAIL')} name="email" validation="EMAIL" required field="input" fieldProps={{size: 'large'}} />
-                <FormField className="col-md-6" label={i18n('FULL_NAME')} name="name" validation="NAME" required field="input" fieldProps={{size: 'large'}} />
+                <FormField className="col-md-6" label={i18n('EMAIL')} name="email" validation="EMAIL" required field="input" fieldProps={{ size: 'large' }} />
+                <FormField className="col-md-6" label={i18n('FULL_NAME')} name="name" validation="NAME" required field="input" fieldProps={{ size: 'large' }} />
             </div>
         );
     }
@@ -136,11 +158,17 @@ class CreateTicketForm extends React.Component {
             loading,
             onSubmit: this.onSubmit.bind(this),
             values: form,
-            onChange: form => this.setState({form})
+            onChange: form => this.setState({ form })
         };
     }
 
     onSubmit(formState) {
+
+        formState = {
+            ...formState,
+            user: this.state.selectedUser
+        }
+
         let captcha = this.refs.captcha && this.refs.captcha.getWrappedInstance();
 
         if (captcha && !captcha.getValue()) {
@@ -170,7 +198,7 @@ class CreateTicketForm extends React.Component {
                 loading: false,
                 message
             },
-            () => {onSuccess && onSuccess(result, email, message);}
+            () => { onSuccess && onSuccess(result, email, message); }
         );
     }
 
@@ -178,6 +206,34 @@ class CreateTicketForm extends React.Component {
         this.setState({
             loading: false,
             message: 'fail'
+        });
+    }
+
+    loadUsers() {
+        const sendData = {
+            page: 1,
+            orderBy: 'id',
+            desc: true,
+            search: ''
+        };
+        API.call({
+            path: '/user/get-users',
+            data: sendData
+        }).then(response => {
+            console.log(response);
+            let users = response.data.users;
+            console.log(users);
+            const returnUsers = users.map(user => {
+                return {
+                    name: user.email,
+                    id: user.id
+                }
+            });
+
+            console.log(returnUsers);
+            this.setState({
+                users: returnUsers
+            });
         });
     }
 }

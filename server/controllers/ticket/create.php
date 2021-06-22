@@ -50,6 +50,9 @@ class CreateController extends Controller {
     private $email;
     private $name;
     private $apiKey;
+    private $createForUser;
+    private $user;
+
     public function validations() {
         $validations = [
             'permission' => 'user',
@@ -104,6 +107,8 @@ class CreateController extends Controller {
         $this->language = Controller::request('language');
         $this->email = Controller::request('email');
         $this->name = Controller::request('name');
+        $this->createForUser = Controller::request('createForUser');
+        $this->user = Controller::request('user');
         $this->apiKey = APIKey::getDataStore(Controller::request('apiKey'), 'token');
         
         if(!Controller::isStaffLogged() && Department::getDataStore($this->departmentId)->private) {
@@ -176,44 +181,71 @@ class CreateController extends Controller {
         $author = $this->getAuthor();
         $this->language = $this->getCorrectLanguage();
 
-        $ticket = new Ticket();
+        if($this->createForUser) {
+            $author = User::getUser($this->user);
 
-        $fileUploader = FileUploader::getInstance();
-        $fileUploader->setPermission(FileManager::PERMISSION_TICKET, $ticket->generateUniqueTicketNumber());
+            $ticket = new Ticket();
+            $ticket->setProperties([
+                'title' => $this->title,
+                'content' => $this->content,
+                'language' => $this->language,
+                'department' => $department,
+                'file' => null,
+                'date' => Date::getCurrentDate(),
+                'unread' => true,
+                'unreadStaff' => false,
+                'closed' => false,
+                'authorName' => $this->name,
+                'authorEmail' => $this->email,
+                'totalDepartments' => 0,
+                'totalOwners' => 0
+            ]);
+            $ticket->setAuthor($author);
+            $author->sharedTicketList->add($ticket);
+            $author->store();
+            $ticket->store();
 
-        $imagePaths = $this->uploadImages(Controller::isStaffLogged());
-        $fileUploader = $this->uploadFile(Controller::isStaffLogged());
+            $this->ticketNumber = $ticket->ticketNumber;
+        } else {
+            $ticket = new Ticket();
 
-        $ticket->setProperties(array(
-            'title' => $this->title,
-            'content' => $this->replaceWithImagePaths($imagePaths, $this->content),
-            'language' => $this->language,
-            'department' => $department,
-            'file' => ($fileUploader instanceof FileUploader) ? $fileUploader->getFileName() : null,
-            'date' => Date::getCurrentDate(),
-            'unread' => false,
-            'unreadStaff' => true,
-            'closed' => false,
-            'authorName' => $this->name,
-            'authorEmail' => $this->email,
-            'totalDepartments' => 0,
-            'totalOwners' => 0
-        ));
+            $fileUploader = FileUploader::getInstance();
+            $fileUploader->setPermission(FileManager::PERMISSION_TICKET, $ticket->generateUniqueTicketNumber());
 
-        $ticket->setAuthor($author);
-        $author->sharedTicketList->add($ticket);
+            $imagePaths = $this->uploadImages(Controller::isStaffLogged());
+            $fileUploader = $this->uploadFile(Controller::isStaffLogged());
 
-        if(!Controller::isStaffLogged()) {
-            $author->tickets++;
+            $ticket->setProperties(array(
+                'title' => $this->title,
+                'content' => $this->replaceWithImagePaths($imagePaths, $this->content),
+                'language' => $this->language,
+                'department' => $department,
+                'file' => ($fileUploader instanceof FileUploader) ? $fileUploader->getFileName() : null,
+                'date' => Date::getCurrentDate(),
+                'unread' => false,
+                'unreadStaff' => true,
+                'closed' => false,
+                'authorName' => $this->name,
+                'authorEmail' => $this->email,
+                'totalDepartments' => 0,
+                'totalOwners' => 0
+            ));
 
-            $this->email = $author->email;
-            $this->name = $author->name;
+            $ticket->setAuthor($author);
+            $author->sharedTicketList->add($ticket);
+
+            if(!Controller::isStaffLogged()) {
+                $author->tickets++;
+
+                $this->email = $author->email;
+                $this->name = $author->name;
+            }
+
+            $author->store();
+            $ticket->store();
+
+            $this->ticketNumber = $ticket->ticketNumber;
         }
-
-        $author->store();
-        $ticket->store();
-
-        $this->ticketNumber = $ticket->ticketNumber;
     }
 
     private function getCorrectLanguage() {
