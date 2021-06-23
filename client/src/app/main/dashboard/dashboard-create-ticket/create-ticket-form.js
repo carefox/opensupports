@@ -98,7 +98,7 @@ class CreateTicketForm extends React.Component {
     }
 
     renderCreateForCustomer() {
-        if(!this.props.isStaff) {
+        if (!this.props.isStaff) {
             return (
                 <div></div>
             )
@@ -136,9 +136,17 @@ class CreateTicketForm extends React.Component {
     }
 
     renderFileUpload() {
+        if (this.props.isStaff) {
+            return (
+                <div className="create-ticket-form__file">
+                    <FormField name="file" field="file" />
+                </div>
+            )
+        }
         return (
             <div className="create-ticket-form__file">
                 <FormField name="file" field="file" />
+                <a target="_blank">Klicka här för att ladda upp fil större än 50mb (kommer snart)</a>
             </div>
         );
     }
@@ -224,6 +232,9 @@ class CreateTicketForm extends React.Component {
     }
 
     loadUsers() {
+        if (!this.props.isStaff) {
+            return;
+        }
         const sendData = {
             page: 1,
             orderBy: 'id',

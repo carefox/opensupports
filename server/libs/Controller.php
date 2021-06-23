@@ -102,7 +102,7 @@ abstract class Controller {
         if(!$allowAttachments && !$forceUpload) return [];
         if(!$totalImages) return [];
 
-        $maxSize = Setting::getSetting('max-size')->getValue();
+        $maxSize = 55;
 
         $fileUploader = FileUploader::getInstance();
         $fileUploader->setMaxSize($maxSize);
@@ -131,7 +131,7 @@ abstract class Controller {
         if(!$allowAttachments && !$forceUpload) return '';
         if(!isset($_FILES['file'])) return '';
 
-        $maxSize = Setting::getSetting('max-size')->getValue();
+        $maxSize = 55;
 
         $fileUploader = FileUploader::getInstance();
         $fileUploader->setMaxSize($maxSize);
