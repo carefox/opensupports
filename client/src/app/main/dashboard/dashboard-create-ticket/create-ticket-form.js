@@ -103,7 +103,9 @@ class CreateTicketForm extends React.Component {
 
     renderUserSelect() {
         const users = this.state.users;
-        users.unshift({ name: "Ingen vald", id: "0" })
+        if(users.length > 0 && users[0].id != 0) {
+            users.unshift({ name: "Ingen vald", id: "0" });    
+        }
 
         return users.map(element => {
             return (
