@@ -78,11 +78,7 @@ class CreateTicketForm extends React.Component {
                             }} /> : null
                         }
                     </div>
-                    <FormField field="checkbox" label="Skapa ärende åt kunden" name="createForUser"></FormField>
-                    <select name="user" onChange={(e) => this.setState({selectedUser: e.target.value})}>
-                        {this.renderUserSelect()}
-                    </select>
-
+                    {this.renderCreateForCustomer()}
                     <FormField
                         label={i18n('CONTENT')}
                         name="content"
@@ -101,10 +97,26 @@ class CreateTicketForm extends React.Component {
         );
     }
 
+    renderCreateForCustomer() {
+        if(!this.props.isStaff) {
+            return (
+                <div></div>
+            )
+        }
+        return (
+            <div>
+                <FormField field="checkbox" label="Skapa ärende åt kunden" name="createForUser"></FormField>
+                <select name="user" onChange={(e) => this.setState({ selectedUser: e.target.value })}>
+                    {this.renderUserSelect()}
+                </select>
+            </div>
+        )
+    }
+
     renderUserSelect() {
         const users = this.state.users;
-        if(users.length > 0 && users[0].id != 0) {
-            users.unshift({ name: "Ingen vald", id: "0" });    
+        if (users.length > 0 && users[0].id != 0) {
+            users.unshift({ name: "Ingen vald", id: "0" });
         }
 
         return users.map(element => {
