@@ -146,7 +146,7 @@ class CreateTicketForm extends React.Component {
         return (
             <div className="create-ticket-form__file">
                 <FormField name="file" field="file" />
-                <a target="_blank">Klicka här för att ladda upp fil större än 50mb (kommer snart)</a>
+                <a target="_blank">Klicka här för att ladda upp en fil större än 50mb (kommer snart)</a>
             </div>
         );
     }
