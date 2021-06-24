@@ -432,7 +432,7 @@ class TicketViewer extends React.Component {
                             <SubmitButton type="secondary">{i18n('RESPOND_TICKET')}</SubmitButton>
                         </div>
                         <div className="ticket-viewer__buttons-column">
-                        {this.props.userStaff ? "" : <a target="_blank">Klicka här för att ladda upp fil större än 50mb (kommer snart)</a>}
+                        {this.props.userStaff ? "" : <a target="_blank">Klicka här för att ladda upp en fil större än 50mb (kommer snart)</a>}
                         <br />
                             <div className="ticket-viewer__buttons-row">
                                 {(this.showDeleteButton()) ? this.renderDeleteTicketButton() : null}
